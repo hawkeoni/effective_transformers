@@ -42,7 +42,7 @@ class Embedder(nn.Module):
             pos_emb = self.pos_emb[:, :seq_len]
         else:
             pos_emb = torch.arange(seq_len)
-            pos_emb = ein.repeat(positions, "seq_len -> batch seq_len", batch=batch_size)
+            pos_emb = ein.repeat(pos_emb, "seq_len -> batch seq_len", batch=batch_size)
             pos_emb = self.pos_emb(pos_emb)
         return emb + pos_emb
 

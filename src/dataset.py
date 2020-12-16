@@ -3,17 +3,10 @@ from typing import List, Tuple
 import pandas as pd
 import torch
 from torch.utils.data import Dataset, DataLoader
-from generate_listops import OPERATORS
+from src.generate_listops import OPERATORS
 
 
-class Singleton:
-    def __new__(cls):
-        if not hasattr(cls, "instance"):
-            cls.instance = super(Singleton, cls).__new__(cls)
-        return cls.instance
-
-
-class Vocab(metaclass=Singleton):
+class Vocab:
     def __init__(self):
         self.word2idx = {}
         self.idx2word = {}

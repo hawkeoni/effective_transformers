@@ -30,11 +30,11 @@ class MultiHeadAttention(nn.Module):
         """
         batch_size = query.size(0)
         q_proj = self.Q_linear(query)
-        q_proj = ein.rearrange(q_proj, "batch seq (heads d) -> batch heads seq d", d_k = self.d_k)
+        q_proj = ein.rearrange(q_proj, "batch seq (heads d) -> batch heads seq d", d = self.d_k)
         k_proj = self.K_linear(key)
-        k_proj = ein.rearrange(k_proj, "batch seq (heads d) -> batch heads d seq", d_k = self.d_k)
+        k_proj = ein.rearrange(k_proj, "batch seq (heads d) -> batch heads d seq", d = self.d_k)
         v_proj = self.V_linear(value)
-        v_proj = ein.rearrange(v_proj, "batch seq (heads d) -> batch heads seq d", d_k = self.d_k)
+        v_proj = ein.rearrange(v_proj, "batch seq (heads d) -> batch heads seq d", d = self.d_k)
         weights = torch.matmul(q_proj, k_proj)  # batch, nheads, seq_len1, seq_len2
         weights = weights / (self.d_k ** 0.5)
         if mask is not None:
