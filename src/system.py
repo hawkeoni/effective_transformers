@@ -19,12 +19,13 @@ class ListOpsSystem(pl.LightningModule):
         ff_dim: int,
         dropout: float,
         transformer_type: str = "default",
+        use_sin_pos: bool = False,
         max_length: int = 2010
     ):
         super().__init__()
         self.save_hyperparameters()
         vocab_len = len(Vocab().idx2word)
-        self.embedder = Embedder(d_model, vocab_len, max_length)
+        self.embedder = Embedder(d_model, vocab_len, max_length, use_sin_pos)
         transformer_cls = TRANSFORMER_FACTORY[transformer_type]
         self.encoder = transformer_cls(d_model, num_layers, num_heads, ff_dim, dropout)
         self.out = nn.Linear(d_model, 10)
