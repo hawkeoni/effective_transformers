@@ -79,11 +79,11 @@ class TransformerEncoderLayer(nn.Module):
         self.self_attention = MultiHeadAttention(d_model, num_heads, dropout)
         self.feedforward = PositionwiseFeedforward(d_model, ff_dim)
 
-    def forward(self, x: torch.Tensor):
+    def forward(self, x: torch.Tensor, mask: torch.Tensor = None):
         """
         x - [batch_size, seq_len, d_model]
         """
-        x = self.self_attention(x, x, x) + x
+        x = self.self_attention(x, x, x, mask) + x
         x = self.norm1(x)
         x = self.feedforward(x) + x
         x = self.norm2(x)
@@ -98,7 +98,7 @@ class TransformerEncoder(nn.Module):
             layers.append(TransformerEncoderLayer(d_model, num_heads, ff_dim, dropout))
         self.layers = nn.Sequential(*layers)
 
-    def forward(self, x: torch.Tensor):
+    def forward(self, x: torch.Tensor, mask: torch.Tensor = None):
         """
         x - [batch_size, seq_len, d_model]
         """

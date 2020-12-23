@@ -112,7 +112,7 @@ def write_to_file(data: List[Tuple["Tree", int]], filename: Path):
 
 def main():
     parser = ArgumentParser()
-    parser.add_argument("--num_train_samples", type=int, default=96000)
+    parser.add_argument("--num_train_samples", type=int, default=2000)
     parser.add_argument("--num_test_samples", type=int, default=2000)
     parser.add_argument("--num_valid_samples", type=int, default=2000)
     parser.add_argument(
@@ -147,6 +147,7 @@ def main():
     num_samples = (
         args.num_train_samples + args.num_test_samples + args.num_valid_samples
     )
+    print("Started generating")
     while len(data) < num_samples:
         tree, length = generate_tree(1, args.max_depth, args.max_args)
         if length > args.min_length and length < args.max_length:
@@ -157,7 +158,6 @@ def main():
     for example in data:
         train.append([to_string(example), to_value(example)])
 
-    print(train[:10])
     val = train[args.num_train_samples :]
     test = val[args.num_valid_samples :]
     val = val[: args.num_valid_samples]

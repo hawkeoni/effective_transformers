@@ -10,7 +10,7 @@ class Vocab:
     def __init__(self):
         self.word2idx = {}
         self.idx2word = {}
-        tokens = ["[CLS]"] + list(map(str, range(10))) + OPERATORS + ["(", ")"]
+        tokens = ["[PAD", "[CLS]"] + list(map(str, range(10))) + OPERATORS + ["(", ")", "[", "]"]
         for i, token in enumerate(tokens):
             self.word2idx[token] = i
             self.idx2word[i] = token
@@ -26,6 +26,7 @@ class Vocab:
 
 
 class ListOpsDataset(Dataset):
+    
     def __init__(self, filename: str):
         self.vocab = Vocab()
         self.df = pd.read_csv(filename)
@@ -33,7 +34,10 @@ class ListOpsDataset(Dataset):
 
     def __getitem__(self, index: int) -> Tuple[torch.LongTensor, torch.LongTensor]:
         x = self.df.iloc[index].Source
-        y = self.df.iloc[index].Target
+        y = [self.df.iloc[index].Target]
         x = torch.LongTensor(x)
-        y = torch.LongTensor(x)
+        y = torch.LongTensor(y)
         return x, y
+
+    def __len__(self):
+        return len(self.df)
