@@ -24,5 +24,5 @@ if __name__ == "__main__":
         save_top_k=-1,
         save_last=True
     )
-    trainer = pl.Trainer.from_argparse_args(args, checkpoint_callback=checkpoint_callback)
+    trainer = pl.Trainer.from_argparse_args(args, checkpoint_callback=checkpoint_callback, log_every_n_steps=1)
     trainer.fit(system)
