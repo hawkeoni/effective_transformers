@@ -41,7 +41,7 @@ class Embedder(nn.Module):
         if self.use_sin_pos:
             pos_emb = self.pos_emb[:, :seq_len]
         else:
-            pos_emb = torch.arange(seq_len)
+            pos_emb = torch.arange(seq_len, device=x.device)
             pos_emb = ein.repeat(pos_emb, "seq_len -> batch seq_len", batch=batch_size)
             pos_emb = self.pos_emb(pos_emb)
         return emb + pos_emb

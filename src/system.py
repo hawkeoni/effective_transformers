@@ -56,6 +56,8 @@ class ListOpsSystem(pl.LightningModule):
         self.base_lr = 2e-5
         self.loss_fn = nn.CrossEntropyLoss()
         self.batch_size = batch_size
+        self.training_acc = pl.metrics.Accuracy()
+        self.validation_acc = pl.metrics.Accuracy()
 
     def forward(self, x: torch.LongTensor, mask: torch.Tensor = None):
         """
@@ -79,10 +81,8 @@ class ListOpsSystem(pl.LightningModule):
         pred = self(x)
         loss = self.loss_fn(pred, y)
         p = pred.argmax(dim=1)
-        true = (p == y).sum().item()
-        total = y.size(0)
-        self.log("train_loss", loss, on_step=True, on_epoch=True)
-        return {"loss": loss, "total": total, "true": true}
+        self.log("train_acc", self.training_acc(p, y), on_step=True, on_epoch=True)
+        return loss
 
     def validation_step(self, batch, batch_idx):
         # x - [batch, seq_len] y - [batch]
@@ -90,22 +90,8 @@ class ListOpsSystem(pl.LightningModule):
         pred = self(x)
         loss = self.loss_fn(pred, y)
         p = pred.argmax(dim=1)
-        true = (p == y).sum().item()
-        total = y.size(0)
-        self.log("valid_loss", loss, on_step=True, on_epoch=True)
-        return {"loss": loss, "total": total, "true": true}
-
-    def training_epoch_end(self, outputs):
-        total = sum([x["total"] for x in outputs])
-        correct = sum([x["true"] for x in outputs])
-        accuracy = correct / (total + 1e-12)
-        self.log("train_accuracy", accuracy, on_epoch=True)
-
-    def validation_epoch_end(self, outputs):
-        total = sum([x["total"] for x in outputs])
-        correct = sum([x["true"] for x in outputs])
-        accuracy = correct / (total + 1e-12)
-        self.log("valid_accuracy", accuracy, on_epoch=True)
+        self.log("valid_acc", self.validation_acc(p, y), on_step=True, on_epoch=True)
+        return loss
 
     def configure_optimizers(self):
         optimizer = torch.optim.Adam(self.parameters(), lr=self.base_lr)
