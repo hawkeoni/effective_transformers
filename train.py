@@ -1,7 +1,9 @@
+import os
 from pathlib import Path
 from argparse import ArgumentParser
 
 import pytorch_lightning as pl
+from pytorch_lightning.loggers.neptune import NeptuneLogger
 
 from src.system import ListOpsSystem
 
@@ -18,10 +20,13 @@ if __name__ == "__main__":
     checkpoint_callback = pl.callbacks.ModelCheckpoint(
         filepath=args.serialization_dir,
         verbose=True,
-        #monitor='valid_acc_epoch',
+        monitor='valid_acc_epoch',
         mode='max',
         prefix='',
         save_top_k=-1,
         save_last=True)
-    trainer = pl.Trainer.from_argparse_args(args, checkpoint_callback=checkpoint_callback, log_every_n_steps=1)
+    trainer = pl.Trainer.from_argparse_args(
+            args, checkpoint_callback=checkpoint_callback, log_every_n_steps=1,
+            logger=[NeptuneLogger(os.environ["NEPTUNE_API_TOKEN"], "hawkeoni/effective-transformers")])
+
     trainer.fit(system)
