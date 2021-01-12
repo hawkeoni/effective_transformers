@@ -1,5 +1,5 @@
 from argparse import ArgumentParser
-from typing import List, Tuple, Optional
+from typing import List, Tuple, Optional, Dict
 
 import torch
 import torch.nn as nn
@@ -96,9 +96,9 @@ class ListOpsSystem(pl.LightningModule):
         loss = self.loss_fn(pred, y)
         p = pred.argmax(dim=1)
         self.log("train_acc", self.training_acc(p, y),
-                 on_step=True, on_epoch=True)
+                 on_step=True)
         self.log("train_loss", loss)
-        return loss
+        return {"loss": loss, "total": y.size(0), "correct": (p == y).sum().item()}
 
     def validation_step(self, batch, batch_idx):
         # x - [batch, seq_len] y - [batch]
@@ -108,8 +108,24 @@ class ListOpsSystem(pl.LightningModule):
         p = pred.argmax(dim=1)
         self.log("valid_loss", loss)
         self.log("valid_acc", self.validation_acc(p, y),
-                 on_step=True, on_epoch=True)
-        return loss
+                 on_step=True)
+        return {"loss": loss, "total": y.size(0), "correct": (p == y).sum().item()}
+
+    def validation_epoch_end(self, outs: List[Dict[str, float]]):
+        total = 0
+        correct = 0
+        for out in outs:
+            total += outs["total"]
+            correct += outs["correct"]
+        self.log("valid_acc_epoch", correct / (total + 1e-12))
+
+    def train_epoch_end(self, outs: List[Dict[str, float]]):
+        total = 0
+        correct = 0
+        for out in outs:
+            total += outs["total"]
+            correct += outs["correct"]
+        self.log("train_acc_epoch", correct / (total + 1e-12))
 
     def configure_optimizers(self):
         optimizer = torch.optim.Adam(self.parameters(), lr=self.base_lr)
@@ -146,7 +162,7 @@ class ListOpsSystem(pl.LightningModule):
             dataset = ListOpsDataset("dataset/basic_train.csv")
         except:
             return
-        loader = DataLoader(dataset, self.batch_size, collate_fn=self.collate_fn, num_workers=4)
+        loader = DataLoader(dataset, self.batch_size, collate_fn=self.collate_fn)
         return loader
 
     def val_dataloader(self) -> Optional[DataLoader]:
@@ -154,7 +170,7 @@ class ListOpsSystem(pl.LightningModule):
             dataset = ListOpsDataset("dataset/basic_val.csv")
         except:
             return
-        loader = DataLoader(dataset, self.batch_size, collate_fn=self.collate_fn, num_workers=4)
+        loader = DataLoader(dataset, self.batch_size, collate_fn=self.collate_fn)
         return loader
 
     def test_dataloader(self) -> Optional[DataLoader]:
@@ -162,7 +178,7 @@ class ListOpsSystem(pl.LightningModule):
             dataset = ListOpsDataset("dataset/basic_test.csv")
         except:
             return
-        loader = DataLoader(dataset, self.batch_size, collate_fn=self.collate_fn, num_workers=4)
+        loader = DataLoader(dataset, self.batch_size, collate_fn=self.collate_fn)
         return loader
 
     @staticmethod

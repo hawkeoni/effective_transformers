@@ -2,6 +2,7 @@ import os
 from pathlib import Path
 from argparse import ArgumentParser
 
+import neptune
 import pytorch_lightning as pl
 from pytorch_lightning.loggers.neptune import NeptuneLogger
 
@@ -9,6 +10,7 @@ from src.system import ListOpsSystem
 
 
 if __name__ == "__main__":
+    neptune.create_experiment()
     parser = ArgumentParser()
     parser.add_argument("--serialization_dir", type=str, default="model")
     parser = pl.Trainer.add_argparse_args(parser)
