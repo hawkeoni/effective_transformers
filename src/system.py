@@ -1,3 +1,4 @@
+from pathlib import Path
 from argparse import ArgumentParser
 from typing import List, Tuple
 
@@ -35,7 +36,6 @@ class ListOpsSystem(pl.LightningModule):
         parser.add_argument("--max_length", type=int, default=2010)
         parser.add_argument("--warmup_steps", type=int, default=1000)
         parser.add_argument("--batch_size", type=int, default=32)
-        parser.add_argument("--encoder_layers", type=int, default=12)
         parser.add_argument("--base_lr", type=float, default=2e-5)
         return parser
 
@@ -56,6 +56,7 @@ class ListOpsSystem(pl.LightningModule):
     ):
         super().__init__()
         self.save_hyperparameters()
+        self.step = 0
         vocab_len = len(Vocab().idx2word)
         self.embedder = Embedder(d_model, vocab_len, max_length, use_sin_pos)
         transformer_cls = TRANSFORMER_FACTORY[model_type]
@@ -82,8 +83,6 @@ class ListOpsSystem(pl.LightningModule):
         # pooled - [batch, d_model]
         pred = self.out(pooled)
         # pred - [batch, 10]
-        import time
-        time.sleep(0.3)
         return pred
 
     def training_step(self, batch, batch_idx):
@@ -110,16 +109,20 @@ class ListOpsSystem(pl.LightningModule):
         optimizer = torch.optim.Adam(self.parameters(), lr=self.base_lr)
         return optimizer
 
-    """def optimizer_step(self, current_epoch, batch_nb, optimizer, optimizer_idx, closure, on_tpu=False, using_native_amp=False, using_lbfgs=False):
+    def optimizer_step(self, current_epoch, batch_nb, optimizer, optimizer_idx, closure, on_tpu=False, using_native_amp=False, using_lbfgs=False):
         super().optimizer_step(current_epoch, batch_nb, optimizer, optimizer_idx, closure, on_tpu, using_native_amp, using_lbfgs)
-        warmup_steps = self.hparams["warmup_steps"]
-        lr = min(batch_nb / warmup_steps * self.base_lr, 1.) * self.base_lr
+        self.step += 1
+        warmup_steps = self.hparams.get("warmup_steps", 1)
+        lr = min(self.step / warmup_steps, 1.) * self.base_lr
         for param_group in optimizer.param_groups:
             param_group["lr"] = lr
-    """
+        print(warmup_steps, lr)
+        self.log("lr", lr, on_step=True, prog_bar=True)
+
+
 
     def train_dataloader(self) -> DataLoader:
-        dataset = ListOpsDataset("dataset/basic_train.csv")
+        dataset = ListOpsDataset("dataset/train.csv")
         loader = DataLoader(dataset, self.batch_size, collate_fn=self.collate_fn)#, num_workers=8)
         return loader
 

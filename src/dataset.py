@@ -24,9 +24,8 @@ class Vocab:
         return self.numericalize(arr)
 
 
-
 class ListOpsDataset(Dataset):
-    
+
     def __init__(self, filename: str):
         self.vocab = Vocab()
         self.df = pd.read_csv(filename)
