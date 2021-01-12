@@ -114,7 +114,7 @@ class ListOpsSystem(pl.LightningModule):
         self.log("valid_acc_epoch", correct / (total + 1e-12))
         self.log("valid_loss_epoch", loss / (len(outs) + 1))
 
-    def train_epoch_end(self, outs: List[Dict[str, float]]):
+    def training_epoch_end(self, outs: List[Dict[str, float]]):
         loss = 0
         total = 0
         correct = 0
