@@ -150,6 +150,7 @@ def main():
     print("Started generating")
     while len(data) < num_samples:
         tree, length = generate_tree(1, args.max_depth, args.max_args)
+        length = to_string(tree).count(" ") + 1
         if length > args.min_length and length < args.max_length:
             data.add(tree)
             if len(data) % 1000 == 0:

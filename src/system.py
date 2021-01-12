@@ -1,6 +1,5 @@
-from pathlib import Path
 from argparse import ArgumentParser
-from typing import List, Tuple
+from typing import List, Tuple, Optional
 
 import torch
 import torch.nn as nn
@@ -60,7 +59,12 @@ class ListOpsSystem(pl.LightningModule):
         vocab_len = len(Vocab().idx2word)
         self.embedder = Embedder(d_model, vocab_len, max_length, use_sin_pos)
         transformer_cls = TRANSFORMER_FACTORY[model_type]
-        self.encoder = transformer_cls(d_model=d_model, num_layers=num_layers, num_heads=num_heads, ff_dim=ff_dim, dropout=dropout)
+        self.encoder = transformer_cls(
+                d_model=d_model,
+                num_layers=num_layers,
+                num_heads=num_heads,
+                ff_dim=ff_dim,
+                dropout=dropout)
         self.out = nn.Linear(d_model, 10)
         self.base_lr = base_lr
         self.warmup_steps = warmup_steps
@@ -91,7 +95,8 @@ class ListOpsSystem(pl.LightningModule):
         pred = self(x)
         loss = self.loss_fn(pred, y)
         p = pred.argmax(dim=1)
-        self.log("train_acc", self.training_acc(p, y), on_step=True, on_epoch=True)
+        self.log("train_acc", self.training_acc(p, y),
+                 on_step=True, on_epoch=True)
         self.log("train_loss", loss)
         return loss
 
@@ -102,42 +107,62 @@ class ListOpsSystem(pl.LightningModule):
         loss = self.loss_fn(pred, y)
         p = pred.argmax(dim=1)
         self.log("valid_loss", loss)
-        self.log("valid_acc", self.validation_acc(p, y), on_step=True, on_epoch=True)
+        self.log("valid_acc", self.validation_acc(p, y),
+                 on_step=True, on_epoch=True)
         return loss
 
     def configure_optimizers(self):
         optimizer = torch.optim.Adam(self.parameters(), lr=self.base_lr)
         return optimizer
 
-    def optimizer_step(self, current_epoch, batch_nb, optimizer, optimizer_idx, closure, on_tpu=False, using_native_amp=False, using_lbfgs=False):
-        super().optimizer_step(current_epoch, batch_nb, optimizer, optimizer_idx, closure, on_tpu, using_native_amp, using_lbfgs)
+    def optimizer_step(
+            self,
+            current_epoch,
+            batch_nb,
+            optimizer,
+            optimizer_idx,
+            closure,
+            on_tpu=False,
+            using_native_amp=False,
+            using_lbfgs=False):
+        super().optimizer_step(
+                current_epoch,
+                batch_nb,
+                optimizer,
+                optimizer_idx,
+                closure,
+                on_tpu,
+                using_native_amp,
+                using_lbfgs)
         self.step += 1
         warmup_steps = self.hparams.get("warmup_steps", 1)
         lr = min(self.step / warmup_steps, 1.) * self.base_lr
         for param_group in optimizer.param_groups:
             param_group["lr"] = lr
-        print(warmup_steps, lr)
         self.log("lr", lr, on_step=True, prog_bar=True)
 
-
-
-    def train_dataloader(self) -> DataLoader:
-        dataset = ListOpsDataset("dataset/train.csv")
-        loader = DataLoader(dataset, self.batch_size, collate_fn=self.collate_fn)#, num_workers=8)
+    def train_dataloader(self) -> Optional[DataLoader]:
+        try:
+            dataset = ListOpsDataset("dataset/basic_train.csv")
+        except:
+            return
+        loader = DataLoader(dataset, self.batch_size, collate_fn=self.collate_fn, num_workers=4)
         return loader
 
-    def val_dataloader(self) -> DataLoader:
-        if not Path("dataset/basic_val.csv").exists():
+    def val_dataloader(self) -> Optional[DataLoader]:
+        try:
+            dataset = ListOpsDataset("dataset/basic_val.csv")
+        except:
             return
-        dataset = ListOpsDataset("dataset/basic_val.csv")
-        loader = DataLoader(dataset, self.batch_size, collate_fn=self.collate_fn)#, num_workers=8)
+        loader = DataLoader(dataset, self.batch_size, collate_fn=self.collate_fn, num_workers=4)
         return loader
 
-    def test_dataloader(self) -> DataLoader:
-        if not Path("dataset/basic_test.csv").exists():
+    def test_dataloader(self) -> Optional[DataLoader]:
+        try:
+            dataset = ListOpsDataset("dataset/basic_test.csv")
+        except:
             return
-        dataset = ListOpsDataset("dataset/basic_test.csv")
-        loader = DataLoader(dataset, self.batch_size, collate_fn=self.collate_fn)#, num_workers=8)
+        loader = DataLoader(dataset, self.batch_size, collate_fn=self.collate_fn, num_workers=4)
         return loader
 
     @staticmethod
