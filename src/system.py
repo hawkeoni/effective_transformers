@@ -70,8 +70,6 @@ class ListOpsSystem(pl.LightningModule):
         self.warmup_steps = warmup_steps
         self.loss_fn = nn.CrossEntropyLoss()
         self.batch_size = batch_size
-        self.training_acc = pl.metrics.Accuracy()
-        self.validation_acc = pl.metrics.Accuracy()
 
     def forward(self, x: torch.LongTensor, mask: torch.Tensor = None):
         """
@@ -95,9 +93,6 @@ class ListOpsSystem(pl.LightningModule):
         pred = self(x)
         loss = self.loss_fn(pred, y)
         p = pred.argmax(dim=1)
-        self.log("train_acc", self.training_acc(p, y),
-                 on_step=True)
-        self.log("train_loss", loss)
         return {"loss": loss, "total": y.size(0), "correct": (p == y).sum().item()}
 
     def validation_step(self, batch, batch_idx):
@@ -106,26 +101,29 @@ class ListOpsSystem(pl.LightningModule):
         pred = self(x)
         loss = self.loss_fn(pred, y)
         p = pred.argmax(dim=1)
-        self.log("valid_loss", loss)
-        self.log("valid_acc", self.validation_acc(p, y),
-                 on_step=True)
         return {"loss": loss, "total": y.size(0), "correct": (p == y).sum().item()}
 
     def validation_epoch_end(self, outs: List[Dict[str, float]]):
         total = 0
         correct = 0
+        loss = 0
         for out in outs:
             total += out["total"]
             correct += out["correct"]
+            loss += out["loss"].item()
         self.log("valid_acc_epoch", correct / (total + 1e-12))
+        self.log("valid_loss_epoch", loss / (len(outs) + 1))
 
     def train_epoch_end(self, outs: List[Dict[str, float]]):
+        loss = 0
         total = 0
         correct = 0
         for out in outs:
             total += out["total"]
             correct += out["correct"]
+            loss += out["loss"].item()
         self.log("train_acc_epoch", correct / (total + 1e-12))
+        self.log("train_loss_epoch", loss / (len(outs) + 1))
 
     def configure_optimizers(self):
         optimizer = torch.optim.Adam(self.parameters(), lr=self.base_lr)
@@ -168,14 +166,6 @@ class ListOpsSystem(pl.LightningModule):
     def val_dataloader(self) -> Optional[DataLoader]:
         try:
             dataset = ListOpsDataset("dataset/basic_val.csv")
-        except:
-            return
-        loader = DataLoader(dataset, self.batch_size, collate_fn=self.collate_fn)
-        return loader
-
-    def test_dataloader(self) -> Optional[DataLoader]:
-        try:
-            dataset = ListOpsDataset("dataset/basic_test.csv")
         except:
             return
         loader = DataLoader(dataset, self.batch_size, collate_fn=self.collate_fn)
