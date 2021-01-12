@@ -36,6 +36,7 @@ class ListOpsSystem(pl.LightningModule):
         parser.add_argument("--warmup_steps", type=int, default=1000)
         parser.add_argument("--batch_size", type=int, default=32)
         parser.add_argument("--base_lr", type=float, default=2e-5)
+        parser.add_argument("--weight_decay", type=float, default=0.0)
         return parser
 
     def __init__(
@@ -51,6 +52,7 @@ class ListOpsSystem(pl.LightningModule):
         warmup_steps: int = 2000,
         batch_size: int = 32,
         base_lr: float = 2e-5,
+        weight_decay: float = 0.,
         *args, **kwargs
     ):
         super().__init__()
@@ -70,6 +72,7 @@ class ListOpsSystem(pl.LightningModule):
         self.warmup_steps = warmup_steps
         self.loss_fn = nn.CrossEntropyLoss()
         self.batch_size = batch_size
+        self.weight_decay = weight_decay
 
     def forward(self, x: torch.LongTensor, mask: torch.Tensor = None):
         """
@@ -126,7 +129,7 @@ class ListOpsSystem(pl.LightningModule):
         self.log("train_loss_epoch", loss / (len(outs) + 1))
 
     def configure_optimizers(self):
-        optimizer = torch.optim.Adam(self.parameters(), lr=self.base_lr)
+        optimizer = torch.optim.Adam(self.parameters(), lr=self.base_lr, weight_decay=self.weight_decay)
         return optimizer
 
     def optimizer_step(
@@ -150,10 +153,12 @@ class ListOpsSystem(pl.LightningModule):
                 using_lbfgs)
         self.step += 1
         warmup_steps = self.hparams.get("warmup_steps", 1)
-        lr = min(self.step / warmup_steps, 1.) * self.base_lr
+        lr = self.base_lr
+        lr *= min(self.step / warmup_steps, 1.)
+        lr /= max(self.step, warmup_steps) ** 0.5
         for param_group in optimizer.param_groups:
             param_group["lr"] = lr
-        self.log("lr", lr, on_step=True, prog_bar=True)
+        self.log("lr", lr)
 
     def train_dataloader(self) -> Optional[DataLoader]:
         try:
