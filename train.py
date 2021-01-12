@@ -10,7 +10,6 @@ from src.system import ListOpsSystem
 
 
 if __name__ == "__main__":
-    neptune.create_experiment()
     parser = ArgumentParser()
     parser.add_argument("--serialization_dir", type=str, default="model")
     parser = pl.Trainer.add_argparse_args(parser)

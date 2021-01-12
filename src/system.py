@@ -115,16 +115,16 @@ class ListOpsSystem(pl.LightningModule):
         total = 0
         correct = 0
         for out in outs:
-            total += outs["total"]
-            correct += outs["correct"]
+            total += out["total"]
+            correct += out["correct"]
         self.log("valid_acc_epoch", correct / (total + 1e-12))
 
     def train_epoch_end(self, outs: List[Dict[str, float]]):
         total = 0
         correct = 0
         for out in outs:
-            total += outs["total"]
-            correct += outs["correct"]
+            total += out["total"]
+            correct += out["correct"]
         self.log("train_acc_epoch", correct / (total + 1e-12))
 
     def configure_optimizers(self):
