@@ -1,3 +1,4 @@
+import logging
 from argparse import ArgumentParser
 from typing import List, Tuple, Optional, Dict
 
@@ -12,12 +13,13 @@ from src.transformer import TransformerEncoder
 from src.modules import Embedder
 from src.dataset import Vocab, ListOpsDataset
 
+logger = logging.getLogger(__name__)
 TRANSFORMER_FACTORY = {
     "transformer": TransformerEncoder,
     "lstm": LSTMEncoder,
     "performer": None,
     "linear": None
-    }
+}
 
 
 class ListOpsSystem(pl.LightningModule):
@@ -164,7 +166,8 @@ class ListOpsSystem(pl.LightningModule):
         try:
             dataset = ListOpsDataset("dataset/basic_train.csv")
         except:
-            return
+            logger.exception("In train dataloader:")
+            raise
         loader = DataLoader(dataset, self.batch_size, collate_fn=self.collate_fn)
         return loader
 
@@ -172,7 +175,8 @@ class ListOpsSystem(pl.LightningModule):
         try:
             dataset = ListOpsDataset("dataset/basic_val.csv")
         except:
-            return
+            logger.exception("In validation dataloader:")
+            raise
         loader = DataLoader(dataset, self.batch_size, collate_fn=self.collate_fn)
         return loader
 
