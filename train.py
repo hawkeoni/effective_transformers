@@ -40,12 +40,14 @@ if __name__ == "__main__":
         save_last=True)
     callbacks = [early_stopping_callback, lr_callback, checkpoint_callback]
 
-    loggers = [
-        NeptuneLogger(
-            os.environ["NEPTUNE_API_TOKEN"],
-            "hawkeoni/effective-transformers"
-        )
-    ]
+    loggers = []
+    if args.neptune:
+        loggers = [
+            NeptuneLogger(
+                os.environ["NEPTUNE_API_TOKEN"],
+                "hawkeoni/effective-transformers"
+            )
+        ]
 
     trainer = pl.Trainer.from_argparse_args(args, log_every_n_steps=1, logger=loggers, callbacks=callbacks)
     trainer.fit(system)
