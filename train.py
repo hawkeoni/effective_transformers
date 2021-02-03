@@ -6,7 +6,7 @@ import pytorch_lightning as pl
 from pytorch_lightning.loggers.neptune import NeptuneLogger
 from pytorch_lightning.callbacks import ModelCheckpoint, EarlyStopping, Callback
 
-from src.system import ListOpsSystem
+from effective_transformers.system import ListOpsSystem
 
 
 

@@ -4,7 +4,7 @@ from typing import List, Tuple
 import pandas as pd
 import torch
 from torch.utils.data import Dataset, DataLoader
-from src.generate_listops import OPERATORS
+from effective_transformers.generate_listops import OPERATORS
 
 
 class Vocab:

@@ -9,11 +9,10 @@ from torch.utils.data import DataLoader
 from torch.nn.utils.rnn import pad_sequence
 import pytorch_lightning as pl
 
-from src.lstm import LSTMEncoder
-from src.transformer import TransformerEncoder, PytorchTransformerEncoder
-from src.modules import Embedder
-from src.dataset import Vocab, ListOpsDataset
-from src.scheduler import NoamScheduler
+from effective_transformers.modules.lstm import LSTMEncoder
+from effective_transformers.transformer import TransformerEncoder, PytorchTransformerEncoder
+from effective_transformers.modules import Embedder
+from effective_transformers.dataset import Vocab, ListOpsDataset
 
 logger = logging.getLogger(__name__)
 TRANSFORMER_FACTORY = {
@@ -158,7 +157,7 @@ class ListOpsSystem(pl.LightningModule):
         lr /= max(self.step, warmup_steps) ** 0.5
         for param_group in optimizer.param_groups:
             param_group["lr"] = lr
-        open("a.txt", "a").write(f"{lr}\n")
+        self.log("lr", lr, on_step=True)
         optimizer.step(closure=optimizer_closure)
         optimizer.zero_grad()
 
