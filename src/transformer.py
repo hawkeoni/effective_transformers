@@ -121,6 +121,6 @@ class PytorchTransformerEncoder(nn.Module):
         x = x.transpose(0, 1)
         # mask should not be transposed
         # x - [seq_len, batch, d_model]
-        output = self.transformer(x, mask)
+        output = self.transformer(x, src_key_padding_mask=mask)
         output = output.transpose(0, 1)
         return output
