@@ -29,7 +29,7 @@ if __name__ == "__main__":
         save_top_k=-1,
         save_last=True)
     early_stopping_callback = pl.callbacks.early_stopping.EarlyStopping(
-        "valid_accc_epoch",
+        "valid_acc_epoch",
         patience=3,
         mode="max"
     )
