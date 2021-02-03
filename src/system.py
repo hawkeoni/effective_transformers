@@ -157,7 +157,6 @@ class ListOpsSystem(pl.LightningModule):
         lr /= max(self.step, warmup_steps) ** 0.5
         for param_group in optimizer.param_groups:
             param_group["lr"] = lr
-        self.log("lr", lr)
         optimizer.step(closure=optimizer_closure)
         optimizer.zero_grad()
 
