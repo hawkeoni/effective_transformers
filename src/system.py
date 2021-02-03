@@ -174,7 +174,7 @@ class ListOpsSystem(pl.LightningModule):
 
     def val_dataloader(self) -> Optional[DataLoader]:
         path = self.dataset_path / "val.tsv"
-        if not path.exists:
+        if not path.exists():
             return
         dataset = ListOpsDataset(path)
         loader = DataLoader(dataset, self.batch_size, collate_fn=self.collate_fn)
