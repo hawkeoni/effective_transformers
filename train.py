@@ -44,7 +44,7 @@ if __name__ == "__main__":
         NeptuneLogger(
             os.environ["NEPTUNE_API_TOKEN"],
             "hawkeoni/effective-transformers",
-            experiment_name=args.serialization_dir
+            experiment_id=args.serialization_dir
         )
     ]
 
