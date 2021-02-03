@@ -35,7 +35,9 @@ if __name__ == "__main__":
     )
     loggers = []
     if use_neptune:
-        loggers = [NeptuneLogger(os.environ["NEPTUNE_API_TOKEN"], "hawkeoni/effective-transformers")]
+        loggers = [NeptuneLogger(os.environ["NEPTUNE_API_TOKEN"],
+                                 "hawkeoni/effective-transformers",
+                                 experiment_name=args.serialization_dir)]
     trainer = pl.Trainer.from_argparse_args(
             args, checkpoint_callback=checkpoint_callback, log_every_n_steps=1,
             logger=loggers, callbacks=[early_stopping_callback]

@@ -158,7 +158,7 @@ class ListOpsSystem(pl.LightningModule):
         for param_group in optimizer.param_groups:
             param_group["lr"] = lr
         self.log("lr", lr)
-        optimizer.step()
+        optimizer.step(closure=optimizer_closure)
         optimizer.zero_grad()
 
     def train_dataloader(self) -> Optional[DataLoader]:
