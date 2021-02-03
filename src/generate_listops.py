@@ -107,7 +107,7 @@ def write_to_file(data: List[Tuple["Tree", int]], filename: Path):
         df_dict["Source"].append(tree)
         df_dict["Target"].append(value)
     df = pd.DataFrame(df_dict)
-    df.to_csv(filename, index=False)
+    df.to_csv(filename, index=False, sep="\t")
 
 
 def main():
@@ -165,9 +165,9 @@ def main():
     train = train[: args.num_train_samples]
 
     args.output_dir.mkdir(exist_ok=True)
-    write_to_file(train, args.output_dir / "{}_train.csv".format(args.task))
-    write_to_file(val, args.output_dir / "{}_val.csv".format(args.task))
-    write_to_file(test, args.output_dir / "{}_test.csv".format(args.task))
+    write_to_file(train, args.output_dir / "train.tsv")
+    write_to_file(val, args.output_dir / "val.tsv")
+    write_to_file(test, args.output_dir / "test.tsv")
 
 
 if __name__ == "__main__":

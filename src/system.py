@@ -1,6 +1,7 @@
 import logging
 from argparse import ArgumentParser
 from typing import List, Tuple, Optional, Dict
+from pathlib import Path
 
 import torch
 import torch.nn as nn
@@ -40,6 +41,7 @@ class ListOpsSystem(pl.LightningModule):
         parser.add_argument("--batch_size", type=int, default=32)
         parser.add_argument("--base_lr", type=float, default=2e-5)
         parser.add_argument("--weight_decay", type=float, default=0.0)
+        parser.add_argument("--dataset_dir", type=str, default="dataset")
         return parser
 
     def __init__(
@@ -56,6 +58,7 @@ class ListOpsSystem(pl.LightningModule):
         batch_size: int = 32,
         base_lr: float = 2e-5,
         weight_decay: float = 0.,
+        dataset_dir: str = "dataset",
         *args, **kwargs
     ):
         super().__init__()
@@ -76,6 +79,7 @@ class ListOpsSystem(pl.LightningModule):
         self.loss_fn = nn.CrossEntropyLoss()
         self.batch_size = batch_size
         self.weight_decay = weight_decay
+        self.dataset_path = Path(dataset_dir)
 
     def forward(self, x: torch.LongTensor, mask: torch.Tensor = None):
         """
@@ -164,20 +168,15 @@ class ListOpsSystem(pl.LightningModule):
         self.log("lr", lr)
 
     def train_dataloader(self) -> Optional[DataLoader]:
-        try:
-            dataset = ListOpsDataset("dataset/basic_train.csv")
-        except:
-            logger.exception("In train dataloader:")
-            raise
+        dataset = ListOpsDataset(self.dataset_path / "train.tsv")
         loader = DataLoader(dataset, self.batch_size, collate_fn=self.collate_fn)
         return loader
 
     def val_dataloader(self) -> Optional[DataLoader]:
-        try:
-            dataset = ListOpsDataset("dataset/basic_val.csv")
-        except:
-            logger.exception("In validation dataloader:")
+        path = self.dataset_path / "val.tsv"
+        if not path.exists:
             return
+        dataset = ListOpsDataset(path)
         loader = DataLoader(dataset, self.batch_size, collate_fn=self.collate_fn)
         return loader
 
