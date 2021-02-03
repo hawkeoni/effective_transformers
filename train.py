@@ -2,7 +2,6 @@ import os
 from pathlib import Path
 from argparse import ArgumentParser
 
-import neptune
 import pytorch_lightning as pl
 from pytorch_lightning.loggers.neptune import NeptuneLogger
 
@@ -26,8 +25,15 @@ if __name__ == "__main__":
         prefix='',
         save_top_k=-1,
         save_last=True)
+    early_stopping_callback = pl.callbacks.early_stopping.EarlyStopping(
+        "valid_accc_epoch",
+        patience=3,
+        mode="max"
+    )
     trainer = pl.Trainer.from_argparse_args(
             args, checkpoint_callback=checkpoint_callback, log_every_n_steps=1,
-            logger=[NeptuneLogger(os.environ["NEPTUNE_API_TOKEN"], "hawkeoni/effective-transformers")])
+            logger=[NeptuneLogger(os.environ["NEPTUNE_API_TOKEN"], "hawkeoni/effective-transformers")],
+            callbacks=[early_stopping_callback]
+    )
 
     trainer.fit(system)
