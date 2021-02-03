@@ -1,6 +1,6 @@
 import logging
 from argparse import ArgumentParser
-from typing import List, Tuple, Optional, Dict
+from typing import List, Tuple, Optional, Dict, Callable
 from pathlib import Path
 
 import torch
@@ -141,23 +141,15 @@ class ListOpsSystem(pl.LightningModule):
 
     def optimizer_step(
             self,
-            current_epoch,
-            batch_nb,
-            optimizer,
-            optimizer_idx,
-            closure,
-            on_tpu=False,
-            using_native_amp=False,
-            using_lbfgs=False):
-        super().optimizer_step(
-                current_epoch,
-                batch_nb,
-                optimizer,
-                optimizer_idx,
-                closure,
-                on_tpu,
-                using_native_amp,
-                using_lbfgs)
+            epoch: int = None,
+            batch_idx: int = None,
+            optimizer: "Optimizer" = None,
+            optimizer_idx: int = None,
+            optimizer_closure: Optional[Callable] = None,
+            on_tpu: bool = None,
+            using_native_amp: bool = None,
+            using_lbfgs: bool = None,
+    ):
         self.step += 1
         warmup_steps = self.hparams.get("warmup_steps", 1)
         lr = self.base_lr
@@ -166,6 +158,8 @@ class ListOpsSystem(pl.LightningModule):
         for param_group in optimizer.param_groups:
             param_group["lr"] = lr
         self.log("lr", lr)
+        optimizer.step()
+        optimizer.zero_grad()
 
     def train_dataloader(self) -> Optional[DataLoader]:
         dataset = ListOpsDataset(self.dataset_path / "train.tsv")
