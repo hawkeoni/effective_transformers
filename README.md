@@ -16,6 +16,6 @@ python train.py --serialization_dir test --d_model 512 --num_layers 2 \
 ```bash
 python train.py --serialization_dir custom_transformer --d_model 512 --num_layers 6 --num_heads 8 --ff_dim 2048 \
 --dropout 0.2 --model_type transformer --max_length 2010 --warmup_steps 1000 --batch_size 32 --base_lr 0.00002 \
---weight_decay 0.99 --gpus 1
+--weight_decay 0.1 --gpus 1
 
 ```

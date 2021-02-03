@@ -1,11 +1,10 @@
 import os
 from pathlib import Path
 from argparse import ArgumentParser
-from typing import List
 
 import pytorch_lightning as pl
 from pytorch_lightning.loggers.neptune import NeptuneLogger
-from pytorch_lightning.callbacks import ModelCheckpoint, LearningRateMonitor, EarlyStopping, Callback
+from pytorch_lightning.callbacks import ModelCheckpoint, EarlyStopping, Callback
 
 from src.system import ListOpsSystem
 
@@ -29,7 +28,6 @@ if __name__ == "__main__":
         patience=3,
         mode="max"
     )
-    lr_callback = LearningRateMonitor("step")
     checkpoint_callback = ModelCheckpoint(
         filepath=args.serialization_dir,
         verbose=True,
@@ -38,7 +36,7 @@ if __name__ == "__main__":
         prefix='',
         save_top_k=-1,
         save_last=True)
-    callbacks = [early_stopping_callback, lr_callback, checkpoint_callback]
+    callbacks = [early_stopping_callback, checkpoint_callback]
 
     loggers = []
     if args.neptune:

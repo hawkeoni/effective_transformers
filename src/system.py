@@ -13,6 +13,7 @@ from src.lstm import LSTMEncoder
 from src.transformer import TransformerEncoder, PytorchTransformerEncoder
 from src.modules import Embedder
 from src.dataset import Vocab, ListOpsDataset
+from src.scheduler import NoamScheduler
 
 logger = logging.getLogger(__name__)
 TRANSFORMER_FACTORY = {
@@ -157,6 +158,7 @@ class ListOpsSystem(pl.LightningModule):
         lr /= max(self.step, warmup_steps) ** 0.5
         for param_group in optimizer.param_groups:
             param_group["lr"] = lr
+        open("a.txt", "a").write(f"{lr}\n")
         optimizer.step(closure=optimizer_closure)
         optimizer.zero_grad()
 
