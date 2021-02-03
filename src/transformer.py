@@ -4,6 +4,7 @@ import einops as ein
 
 
 class MultiHeadAttention(nn.Module):
+
     def __init__(self, d_model: int, nheads: int, dropout: float = 0.2):
         super().__init__()
         assert d_model % nheads == 0, "Number of heads should divide d_model"
@@ -89,6 +90,7 @@ class TransformerEncoderLayer(nn.Module):
         x = self.norm2(x)
         return x
 
+
 class TransformerEncoder(nn.Module):
 
     def __init__(self, d_model: int, num_layers: int, num_heads: int, ff_dim: int, dropout: float):
@@ -104,3 +106,20 @@ class TransformerEncoder(nn.Module):
         """
         return self.layers(x)
 
+
+class PytorchTransformerEncoder(nn.Module):
+
+    def __init__(self, d_model: int, num_layers: int, dropout: float, *args, **kwargs):
+        super().__init__()
+        num_heads = kwargs["num_heads"]
+        ff_dim = kwargs["ff_dim"]
+        encoder_layer = nn.TransformerEncoderLayer(d_model, num_heads, ff_dim, dropout)
+        self.transformer = nn.TransformerEncoder(encoder_layer, num_layers, nn.LayerNorm(d_model))
+
+    def forward(self, x: torch.Tensor, mask: torch.Tensor = None):
+        # x - [batch, seq_len, d_model]
+        x = x.transpose(0, 1)
+        # x - [seq_len, batch, d_model]
+        output = self.transformer(x)
+        output = output.transpose(0, 1)
+        return output

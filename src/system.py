@@ -9,13 +9,14 @@ from torch.nn.utils.rnn import pad_sequence
 import pytorch_lightning as pl
 
 from src.lstm import LSTMEncoder
-from src.transformer import TransformerEncoder
+from src.transformer import TransformerEncoder, PytorchTransformerEncoder
 from src.modules import Embedder
 from src.dataset import Vocab, ListOpsDataset
 
 logger = logging.getLogger(__name__)
 TRANSFORMER_FACTORY = {
     "transformer": TransformerEncoder,
+    "pytorch_transformer": PytorchTransformerEncoder,
     "lstm": LSTMEncoder,
     "performer": None,
     "linear": None
@@ -160,7 +161,7 @@ class ListOpsSystem(pl.LightningModule):
         lr /= max(self.step, warmup_steps) ** 0.5
         for param_group in optimizer.param_groups:
             param_group["lr"] = lr
-        self.log("lr", lr, on_step=True, prog_bar=True)
+        self.log("lr", lr)
 
     def train_dataloader(self) -> Optional[DataLoader]:
         try:
@@ -176,7 +177,7 @@ class ListOpsSystem(pl.LightningModule):
             dataset = ListOpsDataset("dataset/basic_val.csv")
         except:
             logger.exception("In validation dataloader:")
-            raise
+            return
         loader = DataLoader(dataset, self.batch_size, collate_fn=self.collate_fn)
         return loader
 
