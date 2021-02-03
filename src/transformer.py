@@ -119,7 +119,8 @@ class PytorchTransformerEncoder(nn.Module):
     def forward(self, x: torch.Tensor, mask: torch.Tensor = None):
         # x - [batch, seq_len, d_model]
         x = x.transpose(0, 1)
+        mask = mask.transpose(0, 1)
         # x - [seq_len, batch, d_model]
-        output = self.transformer(x)
+        output = self.transformer(x, mask)
         output = output.transpose(0, 1)
         return output
