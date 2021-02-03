@@ -13,7 +13,6 @@ from src.lstm import LSTMEncoder
 from src.transformer import TransformerEncoder, PytorchTransformerEncoder
 from src.modules import Embedder
 from src.dataset import Vocab, ListOpsDataset
-from src.scheduler import NoamScheduler
 
 logger = logging.getLogger(__name__)
 TRANSFORMER_FACTORY = {
